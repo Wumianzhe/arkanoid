@@ -4,6 +4,8 @@
 #include <cmath>
 #include <iostream>
 
+using namespace std;
+
 Ball::Ball(sf::Vector2f position, float radius)
     : sf::CircleShape(radius), Entity(position, {0, 0}, {2 * radius, 2 * radius}) {
     CircleShape::setPosition(position);
@@ -48,7 +50,10 @@ bool Ball::_collidesWithRect(sf::FloatRect bounds) const {
     sf::FloatRect _bounds = getTrueBounds();
     sf::Vector2f topLeft = {bounds.left, bounds.top};
     sf::Vector2f sizes = {bounds.width, bounds.height};
-    int sides = sideIntersect(_bounds, bounds);
+    int sides = sideIntersect(bounds, _bounds);
+    if (!sides) {
+        return false;
+    }
 
     // if intersection is on one side, it is correct, but corners need to be rechecked
     if (sides & side::left && sides & side::top) {
@@ -104,6 +109,7 @@ void Ball::collideWith(Racket* racket) {
     sf::Vector2f angle = (_pos - center) / float(sqrt(normSq(_pos - center)));
     float speed = sqrt(normSq(_speed));
     _speed = angle * speed;
+    setPosition(_pos);
 }
 
 void Ball::launch(Racket* racket) {
@@ -117,7 +123,7 @@ void Ball::_collideWithBrick(Brick::Base* brick) {
     if (!_collidesWithRect(bounds)) {
         return;
     }
-    int sides = sideIntersect(getTrueBounds(), bounds);
+    int sides = sideIntersect(bounds, getTrueBounds());
     if (sides & side::left) {
         _pos.x = bounds.left - (_pos.x - bounds.left);
         _speed.x = -_speed.x;
@@ -134,6 +140,7 @@ void Ball::_collideWithBrick(Brick::Base* brick) {
         _pos.y = bounds.top + bounds.height - (_pos.y - bounds.top - bounds.height);
         _speed.y = -_speed.y;
     }
+    setPosition(_pos);
 }
 void Ball::collideWith(Brick::Normal* brick) { _collideWithBrick(brick); }
 void Ball::collideWith(Brick::Bonus* brick) { _collideWithBrick(brick); }
@@ -150,7 +157,7 @@ void Ball::collideWith(Brick::Speed* brick) {
         ratio = std::min(speed + 2, 15.0f) / speed;
     }
     _speed *= ratio;
-    int sides = sideIntersect(getTrueBounds(), bounds);
+    int sides = sideIntersect(bounds, getTrueBounds());
     if (sides & side::left) {
         _pos.x = bounds.left - (_pos.x - bounds.left) * ratio;
         _speed.x = -_speed.x;
@@ -167,4 +174,5 @@ void Ball::collideWith(Brick::Speed* brick) {
         _pos.y = bounds.top + bounds.height - (_pos.y - bounds.top - bounds.height) * ratio;
         _speed.y = -_speed.y;
     }
+    setPosition(_pos);
 }

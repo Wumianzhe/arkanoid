@@ -1,5 +1,6 @@
 #ifndef FIELD_H_
 #define FIELD_H_
+#include "bonus.hpp"
 #include "brick.hpp"
 #include "declarations.hpp"
 #include <memory>
@@ -8,14 +9,17 @@
 
 // separated to make field cleanup/reload simpler (delete and recreate)
 class Field {
+  public:
     Field() = delete;
-    Field(std::string layoutFile, Game* parent);
-    void collisionTest(Ball* ball);
-    ~Field();
+    Field(const std::string& layoutFile, sf::RenderWindow& window);
+    int collisionTest(Ball* ball);
+    void draw();
+    ~Field() = default;
 
   private:
-    Game* _parent;
-    std::vector<std::unique_ptr<Brick::Base>> bricks;
+    sf::RenderWindow& _window;
+    std::vector<std::shared_ptr<Brick::Base>> bricks;
+    std::vector<Bonus::Base*> bonuses;
 };
 
 #endif // FIELD_H_

@@ -14,13 +14,14 @@ class Racket : public Entity, public sf::RectangleShape, public collision::Actor
     void accelLeft();
     void accelRight();
     void stopAccel();
+    void adjustSize(int delta);
 
     void hitBy(Ball* ball) override { ball->collideWith(this); }
     void collideWith(Brick::Normal* brick) override {}
     void collideWith(Brick::Bonus* brick) override {}
     void collideWith(Brick::Invuln* brick) override {}
     void collideWith(Brick::Speed* brick) override {}
-    void collideWith(Bonus* bonus) override;
+    void collideWith(Bonus::Base* bonus) override;
     void collideWithBorders(sf::RenderWindow* window) override;
 
     bool isSticky() { return _isSticky; };

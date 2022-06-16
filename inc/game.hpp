@@ -2,6 +2,7 @@
 #define GAME_H_
 
 #include "ball.hpp"
+#include "field.hpp"
 #include "racket.hpp"
 #include <SFML/Graphics.hpp>
 
@@ -11,7 +12,9 @@ class Game {
     Game(int argc, char** argv);
 
     int run();
+    void draw();
     ~Game();
+    Ball* getBall() const { return ball; }
 
   private:
     void checkCollisions();

@@ -16,7 +16,7 @@ class Ball : public Entity, public sf::CircleShape, public collision::Actor {
     void collideWith(Brick::Bonus* brick) override;
     void collideWith(Brick::Invuln* brick) override;
     void collideWith(Brick::Speed* brick) override;
-    void collideWith(Bonus* bonus) override{};
+    void collideWith(Bonus::Base* bonus) override {}
     void collideWith(Racket* racket);
     void collideWithBorders(sf::RenderWindow* window) override;
 

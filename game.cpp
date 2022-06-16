@@ -12,13 +12,17 @@ Game::Game(int argc, char** argv) {
 
     if (!font->loadFromFile(dir + "overpass-light.ttf"))
         throw std::runtime_error("font loading failed");
+    field = new Field(dir + "layout.cfg", *window);
     window->setVerticalSyncEnabled(true);
-    // window->setFramerateLimit(10);
+    // window->setFramerateLimit(15);
     window->setPosition({100, 100});
 }
 
 Game::~Game() {
     delete window;
+    delete racket;
+    delete ball;
+    delete field;
     delete font;
 }
 
@@ -62,18 +66,25 @@ int Game::run() {
         racket->move();
         checkCollisions();
         window->clear();
-        window->draw(*racket);
-        window->draw(*ball);
+        draw();
         window->display();
     }
 
     return 0;
 }
+void Game::draw() {
+    field->draw();
+    window->draw(*racket);
+    window->draw(*ball);
+}
 
 void Game::checkCollisions() {
-    if (ball->intersects(racket)) {
-        ball->collideWith(racket);
+    if (racket->intersects(ball)) {
+        racket->hitBy(ball);
     }
+    score += field->collisionTest(ball);
+    // bottom condition is a special case and alters score
+
     // condition is inside already
     racket->collideWithBorders(window);
     ball->collideWithBorders(window);

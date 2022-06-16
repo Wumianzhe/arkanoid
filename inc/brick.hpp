@@ -9,6 +9,8 @@ namespace Brick {
 class Base : public Entity, public sf::RectangleShape {
   public:
     Base() = delete;
+    Base(Base&) = delete;
+    Base(Base&&) = delete;
     Base(sf::Vector2f pos, sf::Vector2f size);
 
     void move() override{};
@@ -20,6 +22,7 @@ class Normal : public Base {
   public:
     Normal(sf::Vector2f pos, sf::Vector2f size, int lives);
     void hitBy(Ball* ball) override;
+    bool isDead() override;
 
   protected:
     void _reduceHealth();
@@ -45,7 +48,7 @@ class Invuln : public Base {
 
 class Speed : public Normal {
   public:
-    Speed(sf::Vector2f pos, sf::Vector2f size, int lives);
+    Speed(sf::Vector2f pos, sf::Vector2f size);
     void hitBy(Ball* ball) override;
 };
 

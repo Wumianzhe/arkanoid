@@ -4,7 +4,6 @@
 class Ball;
 class Racket;
 class Field;
-class Bonus;
 class Game;
 
 #endif // DECLARATIONS_H_

@@ -48,3 +48,14 @@ void Racket::collideWithBorders(sf::RenderWindow* window) {
     }
     RectangleShape::setPosition(_pos);
 }
+
+void Racket::collideWith(Bonus::Base* bonus) {}
+
+void Racket::adjustSize(int delta) {
+    auto size = getSize();
+    size.x += delta;
+    // keep center in same place
+    _pos.x -= float(delta) / 2;
+    _bR.width = size.x;
+    setSize(size);
+}
