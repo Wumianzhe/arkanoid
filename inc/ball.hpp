@@ -12,7 +12,10 @@ class Ball : public Entity, public sf::CircleShape, public collision::Actor {
     void move() override;
     void move(sf::Vector2f speed);
     void hitBy(Ball* ball) override{};
-    void collideWith(Brick* brick) override;
+    void collideWith(Brick::Normal* brick) override;
+    void collideWith(Brick::Bonus* brick) override;
+    void collideWith(Brick::Invuln* brick) override;
+    void collideWith(Brick::Speed* brick) override;
     void collideWith(Bonus* bonus) override{};
     void collideWith(Racket* racket);
     void collideWithBorders(sf::RenderWindow* window) override;
@@ -21,7 +24,9 @@ class Ball : public Entity, public sf::CircleShape, public collision::Actor {
     void launch(Racket* racket);
 
   private:
-    bool contains(sf::Vector2f point);
+    void _collideWithBrick(Brick::Base* brick);
+    bool _collidesWithRect(sf::FloatRect bounds) const;
+    bool contains(sf::Vector2f point) const;
     bool onRacket = true;
 };
 

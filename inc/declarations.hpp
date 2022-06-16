@@ -3,7 +3,7 @@
 
 class Ball;
 class Racket;
-class Brick;
+class Field;
 class Bonus;
 class Game;
 

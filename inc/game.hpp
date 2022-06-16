@@ -7,7 +7,9 @@
 
 class Game {
   public:
-    Game();
+    Game() = delete;
+    Game(int argc, char** argv);
+
     int run();
     ~Game();
 
@@ -21,6 +23,7 @@ class Game {
     int lives;
     Racket* racket;
     Ball* ball;
+    Field* field;
 };
 
 #endif // GAME_H_

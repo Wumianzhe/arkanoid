@@ -1,13 +1,19 @@
 #include "game.hpp"
 
-Game::Game() {
+Game::Game(int argc, char** argv) {
     window = new sf::RenderWindow(sf::VideoMode(800, 600), "Arkanoid");
     font = new sf::Font;
     racket = new Racket({360, 580}, {80, 10});
     ball = new Ball({395, 570}, 5);
-    if (!font->loadFromFile("overpass-light.ttf"))
+
+    // to be able to find local files when ran from other directory
+    std::string dir = argv[0];
+    dir = dir.substr(0, dir.find_last_of('/') + 1);
+
+    if (!font->loadFromFile(dir + "overpass-light.ttf"))
         throw std::runtime_error("font loading failed");
     window->setVerticalSyncEnabled(true);
+    // window->setFramerateLimit(10);
     window->setPosition({100, 100});
 }
 

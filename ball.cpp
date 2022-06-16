@@ -1,4 +1,5 @@
 #include "ball.hpp"
+#include "functions.hpp"
 #include "racket.hpp"
 #include <cmath>
 #include <iostream>
@@ -39,33 +40,51 @@ void Ball::collideWithBorders(sf::RenderWindow* window) {
     CircleShape::setPosition(_pos);
 }
 
-float normSq(sf::Vector2f vec) { return vec.x * vec.x + vec.y * vec.y; }
-bool Ball::contains(sf::Vector2f point) {
+bool Ball::contains(sf::Vector2f point) const {
     float radius = getRadius();
     return normSq(point - _pos) <= radius * radius;
 }
+bool Ball::_collidesWithRect(sf::FloatRect bounds) const {
+    sf::FloatRect _bounds = getTrueBounds();
+    sf::Vector2f topLeft = {bounds.left, bounds.top};
+    sf::Vector2f sizes = {bounds.width, bounds.height};
+    int sides = sideIntersect(_bounds, bounds);
 
-void Ball::collideWith(Brick* brick) { std::cout << "collision"; }
+    // if intersection is on one side, it is correct, but corners need to be rechecked
+    if (sides & side::left && sides & side::top) {
+        // corner is outside circle
+        if (!contains(topLeft)) {
+            return false;
+        }
+    }
+    if (sides & side::right && sides & side::top) {
+        if (!contains(topLeft + sf::Vector2f{sizes.x, 0})) {
+            return false;
+        }
+    }
+    if (sides & side::left && sides & side::bottom) {
+        if (!contains(topLeft + sf::Vector2f{0, sizes.y})) {
+            return false;
+        }
+    }
+    if (sides & side::right && sides & side::bottom) {
+        if (!contains(topLeft + sf::Vector2f{sizes.x, sizes.y})) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void Ball::collideWith(Racket* racket) {
+    if (!_collidesWithRect(racket->getTrueBounds())) {
+        return;
+    }
+
     int boxIntersect = intersects(racket);
     sf::Vector2f racketSize = racket->getSize();
     sf::Vector2f racketPos = racket->getPosition();
     float radius = getRadius();
     float dt = 0;
-    // if intersection is on one side, it will be fine, but corners need to be rechecked
-    if (boxIntersect & side::left && boxIntersect & side::top) {
-        // corner is outside circle
-        if (!contains(racketPos)) {
-            return;
-        }
-    }
-    if (boxIntersect & side::right && boxIntersect & side::top) {
-        // corner is outside circle
-        if (!contains(racketPos + sf::Vector2f{racketSize.x, 0})) {
-            return;
-        }
-    }
-    // bottom collision is rare and quietly forgotten
 
     // simulating ball trajectory in continuous time
     _pos = _pos - _speed;
@@ -91,4 +110,61 @@ void Ball::launch(Racket* racket) {
     onRacket = false;
     _pos.y += 1;
     collideWith(racket);
+}
+
+void Ball::_collideWithBrick(Brick::Base* brick) {
+    sf::FloatRect bounds = brick->getTrueBounds();
+    if (!_collidesWithRect(bounds)) {
+        return;
+    }
+    int sides = sideIntersect(getTrueBounds(), bounds);
+    if (sides & side::left) {
+        _pos.x = bounds.left - (_pos.x - bounds.left);
+        _speed.x = -_speed.x;
+    }
+    if (sides & side::top) {
+        _pos.y = bounds.top - (_pos.y - bounds.top);
+        _speed.y = -_speed.y;
+    }
+    if (sides & side::right) {
+        _pos.x = bounds.left + bounds.width - (_pos.x - bounds.left - bounds.width);
+        _speed.x = -_speed.x;
+    }
+    if (sides & side::bottom) {
+        _pos.y = bounds.top + bounds.height - (_pos.y - bounds.top - bounds.height);
+        _speed.y = -_speed.y;
+    }
+}
+void Ball::collideWith(Brick::Normal* brick) { _collideWithBrick(brick); }
+void Ball::collideWith(Brick::Bonus* brick) { _collideWithBrick(brick); }
+void Ball::collideWith(Brick::Invuln* brick) { _collideWithBrick(brick); }
+void Ball::collideWith(Brick::Speed* brick) {
+    sf::FloatRect bounds = brick->getTrueBounds();
+    if (!_collidesWithRect(bounds)) {
+        return;
+    }
+    // increasing speed means also increasing bounce distance
+    float ratio = 1;
+    if (normSq(_speed) < 15 * 15) {
+        float speed = sqrt(normSq(_speed));
+        ratio = std::min(speed + 2, 15.0f) / speed;
+    }
+    _speed *= ratio;
+    int sides = sideIntersect(getTrueBounds(), bounds);
+    if (sides & side::left) {
+        _pos.x = bounds.left - (_pos.x - bounds.left) * ratio;
+        _speed.x = -_speed.x;
+    }
+    if (sides & side::top) {
+        _pos.y = bounds.top - (_pos.y - bounds.top) * ratio;
+        _speed.y = -_speed.y;
+    }
+    if (sides & side::right) {
+        _pos.x = bounds.left + bounds.width - (_pos.x - bounds.left - bounds.width) * ratio;
+        _speed.x = -_speed.x;
+    }
+    if (sides & side::bottom) {
+        _pos.y = bounds.top + bounds.height - (_pos.y - bounds.top - bounds.height) * ratio;
+        _speed.y = -_speed.y;
+    }
 }

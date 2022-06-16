@@ -4,15 +4,17 @@
 #include <SFML/Graphics/Shape.hpp>
 #include <declarations.hpp>
 
+// initially wanted to subclass sf::Entity, but too much rhomboid inheritance
 class Entity {
   public:
     Entity(sf::Vector2f pos, sf::Vector2f speed, sf::Vector2f size) : _pos(pos), _speed(speed), _bR({0, 0}, size){};
-    enum side { none = 0, top = 1, bottom = 2, left = 4, right = 8 };
 
     virtual void move() = 0;
     virtual void hitBy(Ball* ball) = 0;
-    void setSpeed(sf::Vector2f speed) { _speed = speed; };
-    sf::Vector2f getSpeed() { return _speed; };
+    virtual ~Entity() = default;
+    void setSpeed(sf::Vector2f speed) { _speed = speed; }
+    sf::Vector2f getSpeed() const { return _speed; }
+    sf::FloatRect getTrueBounds() const { return {_pos, {_bR.width, _bR.height}}; }
 
     // returns combination of flags corresponding to sides on which bounding rectangles of two entities intersect
     int intersects(const Entity* other) const;

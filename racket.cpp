@@ -3,7 +3,7 @@
 
 using namespace sf;
 
-#define MAX_SPEED 15.0f
+#define MAX_SPEED 12.0f
 
 Racket::Racket(sf::Vector2f position, sf::Vector2f size) : RectangleShape(size), Entity(position, {0, 0}, size) {
     RectangleShape::setPosition(position);
