@@ -44,7 +44,31 @@ Field::Field(const std::string& layoutFile, sf::RenderWindow& window) : _window(
                     break;
                 }
                 case 's': {
-                    block = make_shared<Brick::Bonus>(pos, blockSize, 's');
+                    block = make_shared<Brick::Bonus>(pos, blockSize, Bonus::type::SIZE_DOWN);
+                    break;
+                }
+                case 'w': {
+                    block = make_shared<Brick::Bonus>(pos, blockSize, Bonus::type::SIZE_UP);
+                    break;
+                }
+                case 'u': {
+                    block = make_shared<Brick::Bonus>(pos, blockSize, Bonus::type::SPEED_UP);
+                    break;
+                }
+                case 'd': {
+                    block = make_shared<Brick::Bonus>(pos, blockSize, Bonus::type::SPEED_DOWN);
+                    break;
+                }
+                case 't': {
+                    block = make_shared<Brick::Bonus>(pos, blockSize, Bonus::type::STICKY);
+                    break;
+                }
+                case 'h': {
+                    block = make_shared<Brick::Bonus>(pos, blockSize, Bonus::type::SHIELD);
+                    break;
+                }
+                case 'b': {
+                    block = make_shared<Brick::Bonus>(pos, blockSize, Bonus::type::BALL_UP);
                     break;
                 }
                 default: {
@@ -62,20 +86,62 @@ Field::Field(const std::string& layoutFile, sf::RenderWindow& window) : _window(
 
 void Field::draw() {
     for (auto brick : bricks) {
-        _window.draw(*brick);
+        if (brick) {
+            _window.draw(*brick);
+        }
     }
 }
 
-int Field::collisionTest(Ball* ball) {
+int Field::brickCollisions(Ball* ball) {
     int scoreDelta = 0;
-    for (auto brick : bricks) {
+    for (auto& brick : bricks) {
         if (brick->intersects(ball)) {
             brick->hitBy(ball);
             scoreDelta++;
             if (brick->isDead()) {
+                if (brick->hasBonus()) {
+                    Bonus::Base* bonus = nullptr;
+                    auto bounds = brick->getTrueBounds();
+                    sf::Vector2f center = {bounds.left + bounds.width, bounds.top + bounds.height};
+                    switch (brick->getBonusType()) {
+                    case Bonus::SPEED_UP: {
+                        bonus = new Bonus::SpeedUp(center);
+                    }
+                    case Bonus::SPEED_DOWN: {
+                        bonus = new Bonus::SpeedDown(center);
+                    }
+                    case Bonus::SHIELD: {
+                        bonus = new Bonus::Shield(center);
+                    }
+                    case Bonus::SIZE_UP: {
+                        bonus = new Bonus::SpeedDown(center);
+                    }
+                    case Bonus::SIZE_DOWN: {
+                        bonus = new Bonus::SpeedDown(center);
+                    }
+                    case Bonus::STICKY: {
+                        bonus = new Bonus::SpeedDown(center);
+                    }
+                    case Bonus::RANDOMIZER: {
+                        bonus = new Bonus::SpeedDown(center);
+                    }
+                    case Bonus::BALL_UP: {
+                        bonus = new Bonus::SpeedDown(center);
+                    }
+                        bonuses.push_back(bonus);
+                    }
+                }
                 brick = nullptr;
             }
         }
     }
     return scoreDelta;
+}
+
+int Field::bonusCollisions(Racket* racket) {
+    for (auto& bonus : bonuses) {
+        if (racket->intersects(bonus)) {
+            bonus->hitBy(racket);
+        }
+    }
 }

@@ -20,7 +20,7 @@ void Normal::_reduceHealth() {
     }
 }
 
-bool Normal::isDead() { return _health == 0; }
+bool Normal::isDead() { return _health < 1; }
 
 void Normal::hitBy(Ball* ball) {
     _reduceHealth();

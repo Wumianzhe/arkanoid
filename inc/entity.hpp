@@ -11,6 +11,7 @@ class Entity {
 
     virtual void move() = 0;
     virtual void hitBy(Ball* ball) = 0;
+    virtual void hitBy(Racket* racket) = 0;
     virtual ~Entity() = default;
     void setSpeed(sf::Vector2f speed) { _speed = speed; }
     sf::Vector2f getSpeed() const { return _speed; }

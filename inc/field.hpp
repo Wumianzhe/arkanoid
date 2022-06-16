@@ -7,12 +7,13 @@
 #include <string>
 #include <vector>
 
-// separated to make field cleanup/reload simpler (delete and recreate)
 class Field {
   public:
     Field() = delete;
     Field(const std::string& layoutFile, sf::RenderWindow& window);
-    int collisionTest(Ball* ball);
+    int brickCollisions(Ball* ball);
+    int bonusCollisions(Racket* racket);
+
     void draw();
     ~Field() = default;
 

@@ -3,8 +3,8 @@
 Game::Game(int argc, char** argv) {
     window = new sf::RenderWindow(sf::VideoMode(800, 600), "Arkanoid");
     font = new sf::Font;
-    racket = new Racket({360, 580}, {80, 10});
-    ball = new Ball({395, 570}, 5);
+    racket = new Racket({360, 580}, {80, 10}, *this);
+    balls.push_back(new Ball({395, 570}, 5));
 
     // to be able to find local files when ran from other directory
     std::string dir = argv[0];
@@ -21,7 +21,6 @@ Game::Game(int argc, char** argv) {
 Game::~Game() {
     delete window;
     delete racket;
-    delete ball;
     delete field;
     delete font;
 }
@@ -55,13 +54,15 @@ int Game::run() {
         if (!sf::Keyboard::isKeyPressed(sf::Keyboard::A) && !sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
             racket->stopAccel();
         }
-        if (ball->isOnRacket()) {
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-                ball->launch(racket);
+        for (auto ball : balls) {
+            if (ball->isOnRacket()) {
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+                    ball->launch(racket);
+                }
+                ball->move(racket->getSpeed());
+            } else {
+                ball->move();
             }
-            ball->move(racket->getSpeed());
-        } else {
-            ball->move();
         }
         racket->move();
         checkCollisions();
@@ -75,17 +76,43 @@ int Game::run() {
 void Game::draw() {
     field->draw();
     window->draw(*racket);
-    window->draw(*ball);
+    for (auto ball : balls) {
+        window->draw(*ball);
+    }
 }
 
 void Game::checkCollisions() {
-    if (racket->intersects(ball)) {
-        racket->hitBy(ball);
-    }
-    score += field->collisionTest(ball);
-    // bottom condition is a special case and alters score
+    for (auto ball : balls) {
+        if (racket->intersects(ball)) {
+            racket->hitBy(ball);
+        }
+        score += field->brickCollisions(ball);
 
-    // condition is inside already
+        ball->collideWithBorders(window);
+    }
+
     racket->collideWithBorders(window);
-    ball->collideWithBorders(window);
+}
+
+void Game::bottomCollision(Ball* ball) {
+    if (ball->getPosition().y + 2 * ball->getRadius() > window->getSize().y) {
+        score--;
+    }
+}
+
+void Game::speedCallback(float delta) {
+    for (auto ball : balls) {
+        ball->adjustSpeed(delta);
+    }
+}
+void Game::randomizerCallback() {
+    for (auto ball : balls) {
+        ball->setRandomizer();
+    }
+}
+void Game::ballUpCallback(sf::Vector2f pos) {
+    if (balls.size() < 3) {
+        Ball* ball = new Ball(pos, 5);
+        balls.push_back(ball);
+    }
 }

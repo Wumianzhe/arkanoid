@@ -14,10 +14,14 @@ class Game {
     int run();
     void draw();
     ~Game();
-    Ball* getBall() const { return ball; }
+    void setBarrier() { _hasBarrier = true; }
+    void speedCallback(float delta);
+    void randomizerCallback();
+    void ballUpCallback(sf::Vector2f pos);
 
   private:
     void checkCollisions();
+    void bottomCollision(Ball* ball);
 
     sf::RenderWindow* window;
     sf::Font* font;
@@ -25,8 +29,9 @@ class Game {
     int score;
     int lives;
     Racket* racket;
-    Ball* ball;
+    std::vector<Ball*> balls;
     Field* field;
+    bool _hasBarrier = false;
 };
 
 #endif // GAME_H_

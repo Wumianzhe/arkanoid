@@ -9,9 +9,16 @@ using namespace std;
 Ball::Ball(sf::Vector2f position, float radius)
     : sf::CircleShape(radius), Entity(position, {0, 0}, {2 * radius, 2 * radius}) {
     CircleShape::setPosition(position);
-    _speed = {0, 8};
+    _speed = {0, 9};
 }
 void Ball::move() {
+    if (random_duration > 0) {
+        random_duration--;
+        if (rand() % 17) {
+            // not a random direction change, for now
+            swap(_speed.y, _speed.x);
+        }
+    }
     _pos += _speed;
     setPosition(_pos);
 }
@@ -51,6 +58,7 @@ bool Ball::_collidesWithRect(sf::FloatRect bounds) const {
     sf::Vector2f topLeft = {bounds.left, bounds.top};
     sf::Vector2f sizes = {bounds.width, bounds.height};
     int sides = sideIntersect(bounds, _bounds);
+    cout << sides << endl;
     if (!sides) {
         return false;
     }
@@ -85,7 +93,7 @@ void Ball::collideWith(Racket* racket) {
         return;
     }
 
-    int boxIntersect = intersects(racket);
+    int boxIntersect = racket->intersects(this);
     sf::Vector2f racketSize = racket->getSize();
     sf::Vector2f racketPos = racket->getPosition();
     float radius = getRadius();
@@ -105,10 +113,16 @@ void Ball::collideWith(Racket* racket) {
     }
     _pos += (1 - dt) * _speed;
 
+    if (racket->isSticky()) {
+        onRacket = true;
+        return;
+    }
+
     auto center = racketPos + racketSize / 2.0f;
     sf::Vector2f angle = (_pos - center) / float(sqrt(normSq(_pos - center)));
     float speed = sqrt(normSq(_speed));
     _speed = angle * speed;
+    _pos += dt * _speed;
     setPosition(_pos);
 }
 
@@ -125,11 +139,11 @@ void Ball::_collideWithBrick(Brick::Base* brick) {
     }
     int sides = sideIntersect(bounds, getTrueBounds());
     if (sides & side::left) {
-        _pos.x = bounds.left - (_pos.x - bounds.left);
+        _pos.x = bounds.left - (_pos.x + 2 * getRadius() - bounds.left);
         _speed.x = -_speed.x;
     }
     if (sides & side::top) {
-        _pos.y = bounds.top - (_pos.y - bounds.top);
+        _pos.y = bounds.top - (_pos.y + 2 * getRadius() - bounds.top);
         _speed.y = -_speed.y;
     }
     if (sides & side::right) {
@@ -145,6 +159,11 @@ void Ball::_collideWithBrick(Brick::Base* brick) {
 void Ball::collideWith(Brick::Normal* brick) { _collideWithBrick(brick); }
 void Ball::collideWith(Brick::Bonus* brick) { _collideWithBrick(brick); }
 void Ball::collideWith(Brick::Invuln* brick) { _collideWithBrick(brick); }
+void Ball::adjustSpeed(float delta) {
+    float speed = sqrt(normSq(_speed));
+    float ratio = max(min(speed + delta, 15.0f), 3.0f) / speed;
+    _speed *= ratio;
+}
 void Ball::collideWith(Brick::Speed* brick) {
     sf::FloatRect bounds = brick->getTrueBounds();
     if (!_collidesWithRect(bounds)) {
@@ -176,3 +195,10 @@ void Ball::collideWith(Brick::Speed* brick) {
     }
     setPosition(_pos);
 }
+
+void Ball::hitBy(Ball* ball) {
+    if (ball != this) {
+        if (normSq(_pos - ball->_pos) <= 4 * pow(getRadius(), 2))
+            std::swap(_speed, ball->_speed);
+    }
+};

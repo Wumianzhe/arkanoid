@@ -14,14 +14,17 @@ class Base : public Entity, public sf::RectangleShape {
     Base(sf::Vector2f pos, sf::Vector2f size);
 
     void move() override{};
-    // prefer a callback, but don't know how to do it cleanly
+    // prefer a callback, but don't know how to do it cleanly in time i have left
     virtual bool isDead() = 0;
+    virtual bool hasBonus() { return false; }
+    virtual int getBonusType() const { return -1; }
     virtual ~Base() = default;
 };
 class Normal : public Base {
   public:
     Normal(sf::Vector2f pos, sf::Vector2f size, int lives);
     void hitBy(Ball* ball) override;
+    void hitBy(Racket* racket) override{};
     bool isDead() override;
 
   protected:
@@ -32,8 +35,10 @@ class Normal : public Base {
 class Bonus : public Normal {
   public:
     Bonus(sf::Vector2f pos, sf::Vector2f size, int type);
-    int getBonusType() const { return _type; }
+    int getBonusType() const override { return _type; }
     void hitBy(Ball* ball) override;
+    void hitBy(Racket* racket) override{};
+    bool hasBonus() override { return true; }
 
   private:
     int _type;
@@ -43,6 +48,7 @@ class Invuln : public Base {
   public:
     Invuln(sf::Vector2f pos, sf::Vector2f size);
     void hitBy(Ball* ball) override;
+    void hitBy(Racket* racket) override{};
     bool isDead() override { return false; }
 };
 
@@ -50,6 +56,7 @@ class Speed : public Normal {
   public:
     Speed(sf::Vector2f pos, sf::Vector2f size);
     void hitBy(Ball* ball) override;
+    void hitBy(Racket* racket) override{};
 };
 
 // visual indication of health
