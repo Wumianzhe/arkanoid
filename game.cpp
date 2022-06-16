@@ -14,8 +14,9 @@ Game::Game(int argc, char** argv) {
         throw std::runtime_error("font loading failed");
     field = new Field(dir + "layout.cfg", *window);
     window->setVerticalSyncEnabled(true);
-    // window->setFramerateLimit(15);
     window->setPosition({100, 100});
+    label.setFont(*font);
+    label.setCharacterSize(24);
 }
 
 Game::~Game() {
@@ -66,6 +67,7 @@ int Game::run() {
         }
         racket->move();
         checkCollisions();
+        label.setString(std::to_string(score));
         window->clear();
         draw();
         window->display();
@@ -75,6 +77,7 @@ int Game::run() {
 }
 void Game::draw() {
     field->draw();
+    window->draw(label);
     window->draw(*racket);
     for (auto ball : balls) {
         window->draw(*ball);

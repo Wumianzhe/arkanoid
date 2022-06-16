@@ -25,9 +25,9 @@ class Game {
 
     sf::RenderWindow* window;
     sf::Font* font;
+    sf::Text label;
 
-    int score;
-    int lives;
+    int score = 0;
     Racket* racket;
     std::vector<Ball*> balls;
     Field* field;
